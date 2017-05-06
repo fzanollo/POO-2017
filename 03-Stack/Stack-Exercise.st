@@ -139,10 +139,45 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'stackData'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:37'!
+initialize
+
+	super initialize.
+	stackData := OrderedCollection new! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:42'!
+isEmpty
+
+	^stackData isEmpty.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:48'!
+pop
+
+	^stackData removeFirst.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:54'!
+push: anElement.
+
+"creo que voy a usar collections Abstract collection"
+
+	stackData addFirst: anElement.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:19:44'!
+size
+
+	"to solve error of size. Why the error is 'is not indexable' instead of 'does not undestand size ? ' "
+	
+	^stackData size.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:59'!
+top
+	
+	^stackData at:1.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
