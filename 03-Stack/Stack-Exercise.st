@@ -144,6 +144,12 @@ Object subclass: #OOStack
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
+!OOStack methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/8/2017 17:29:55'!
+emptyCheck
+	"pregunta: por que no hace falta retornar el error?"
+	
+	stackData isEmpty ifTrue: [self error: self class stackEmptyErrorDescription].! !
+
 !OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:37'!
 initialize
 
@@ -155,27 +161,28 @@ isEmpty
 
 	^stackData isEmpty.! !
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:48'!
+!OOStack methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/8/2017 17:31:21'!
 pop
 
+	self emptyCheck.
+	
 	^stackData removeFirst.! !
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:54'!
+!OOStack methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/8/2017 17:31:11'!
 push: anElement.
-
-"creo que voy a usar collections Abstract collection"
 
 	stackData addFirst: anElement.! !
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:19:44'!
+!OOStack methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/8/2017 17:30:56'!
 size
-
-	"to solve error of size. Why the error is 'is not indexable' instead of 'does not undestand size ? ' "
+	"pregunta: to solve error of size. Why the error is 'is not indexable' instead of 'does not undestand size ? ' "
 	
 	^stackData size.! !
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'LM 5/6/2017 11:15:59'!
+!OOStack methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/8/2017 17:31:28'!
 top
+
+	self emptyCheck.
 	
 	^stackData at:1.! !
 
