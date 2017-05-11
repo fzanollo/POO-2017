@@ -139,57 +139,50 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: 'stackData'
+	instanceVariableNames: 'size topStackElement'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStack methodsFor: 'private' stamp: 'fzanollo 5/8/2017 17:29:55'!
-emptyCheck
-	"pregunta: por que no hace falta retornar el error?"
-	
-	stackData isEmpty ifTrue: [self error: self class stackEmptyErrorDescription].! !
-
-
-!OOStack methodsFor: 'initialization' stamp: 'LM 5/6/2017 11:15:37'!
-initialize
-
-	super initialize.
-	stackData := OrderedCollection new! !
-
-
-!OOStack methodsFor: 'testing' stamp: 'LM 5/6/2017 11:15:42'!
+!OOStack methodsFor: 'testing' stamp: 'fzanollo 5/11/2017 16:10:07'!
 isEmpty
+	^size = 0.! !
 
-	^stackData isEmpty.! !
-
-
-!OOStack methodsFor: 'accessing' stamp: 'fzanollo 5/8/2017 17:30:56'!
+!OOStack methodsFor: 'testing' stamp: 'fzanollo 5/11/2017 16:45:42'!
 size
-	"pregunta: to solve error of size. Why the error is 'is not indexable' instead of 'does not undestand size ? ' "
+	^size.! !
+
+
+!OOStack methodsFor: 'initialization' stamp: 'fzanollo 5/11/2017 16:10:52'!
+initialize
+	size := 0.
+	topStackElement := EmptyStackElement new.! !
+
+
+!OOStack methodsFor: 'adding' stamp: 'fzanollo 5/11/2017 16:39:25'!
+push: anElement 
+	|newStackElement|
 	
-	^stackData size.! !
-
-!OOStack methodsFor: 'accessing' stamp: 'fzanollo 5/9/2017 16:03:25'!
-top
-
-	self emptyCheck.
+	newStackElement := NonEmptyStackElement with: anElement withPreviousElement: topStackElement.
+	topStackElement := newStackElement.
 	
-	^stackData at:1.! !
+	size := size +1.! !
 
 
-!OOStack methodsFor: 'adding' stamp: 'fzanollo 5/8/2017 17:31:11'!
-push: anElement.
-
-	stackData addFirst: anElement.! !
-
-
-!OOStack methodsFor: 'removing' stamp: 'fzanollo 5/8/2017 17:31:21'!
+!OOStack methodsFor: 'removing' stamp: 'fzanollo 5/11/2017 16:52:46'!
 pop
-
-	self emptyCheck.
+	|element|
 	
-	^stackData removeFirst.! !
+	element := topStackElement element.
+	topStackElement := topStackElement previousElement.
+	size := size -1.
+	
+	^element.! !
+
+
+!OOStack methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:42:22'!
+top
+	^topStackElement element.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -201,3 +194,71 @@ OOStack class
 stackEmptyErrorDescription
 	
 	^ 'Stack is empty'! !
+
+
+!classDefinition: #StackElement category: #'Stack-Exercise'!
+Object subclass: #StackElement
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!StackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:05:11'!
+element
+	self subclassResponsibility! !
+
+!StackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:05:24'!
+previousElement
+	self subclassResponsibility! !
+
+
+!classDefinition: #EmptyStackElement category: #'Stack-Exercise'!
+StackElement subclass: #EmptyStackElement
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!EmptyStackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:26:23'!
+element
+	^self error: OOStack stackEmptyErrorDescription.! !
+
+!EmptyStackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:26:36'!
+previousElement
+	^self.! !
+
+
+!classDefinition: #NonEmptyStackElement category: #'Stack-Exercise'!
+StackElement subclass: #NonEmptyStackElement
+	instanceVariableNames: 'element previousElement'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!NonEmptyStackElement methodsFor: 'initialization' stamp: 'fzanollo 5/11/2017 16:30:36'!
+with: anElement withPreviousElement: aPreviousElement
+	element := anElement.
+	previousElement := aPreviousElement.! !
+
+
+!NonEmptyStackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:26:54'!
+element
+	^ element.! !
+
+!NonEmptyStackElement methodsFor: 'accessing' stamp: 'fzanollo 5/11/2017 16:27:02'!
+previousElement
+	^ previousElement.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'NonEmptyStackElement class' category: #'Stack-Exercise'!
+NonEmptyStackElement class
+	instanceVariableNames: ''!
+
+!NonEmptyStackElement class methodsFor: 'as yet unclassified' stamp: 'fzanollo 5/11/2017 16:33:35'!
+with: anElement withPreviousElement: aPreviousElement
+	|aNonEmptyStackElement|
+	
+	aNonEmptyStackElement := self new.
+	aNonEmptyStackElement with: anElement withPreviousElement: aPreviousElement.
+	^aNonEmptyStackElement.! !
