@@ -12,7 +12,7 @@ setUp
 	! !
 
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:24:46'!
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:21:53'!
 test01AliveCellWithLessThanTwoAliveNeighDies
 
 	|gameOfLife|
@@ -21,9 +21,9 @@ test01AliveCellWithLessThanTwoAliveNeighDies
 	gameOfLife := GameOfLife withLiveCells: { 1@1 }  withBoard: aThreePerThreeBoard.
 	gameOfLife nextGeneration.
 	
-	self assert: (gameOfLife isDeadAt: 1@1) ! !
+	self assert: (gameOfLife isDead: 1@1) ! !
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:26:58'!
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:21:59'!
 test02AliveCellWithTwoAliveNeighStaysAlive
 
 	|gameOfLife|
@@ -31,9 +31,9 @@ test02AliveCellWithTwoAliveNeighStaysAlive
 	gameOfLife := GameOfLife withLiveCells: { 1@1. 2@0. 1@0. }  withBoard: aThreePerThreeBoard.
 	gameOfLife nextGeneration.
 	
-	self deny: (gameOfLife isDeadAt: 1@1) ! !
+	self deny: (gameOfLife isDead: 1@1) ! !
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:27:15'!
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:03'!
 test03AliveCellWithThreeAliveNeighStaysAlive
 
 	|gameOfLife|
@@ -41,9 +41,9 @@ test03AliveCellWithThreeAliveNeighStaysAlive
 	gameOfLife := GameOfLife withLiveCells: { 1@1. 2@0. 1@0. 1@2. }  withBoard: aThreePerThreeBoard.
 	gameOfLife nextGeneration.
 	
-	self deny: (gameOfLife isDeadAt: 1@1) ! !
+	self deny: (gameOfLife isDead: 1@1) ! !
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:27:27'!
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:09'!
 test04AliveCellWithMoreThanThreeAliveNeighDies
 
 	|gameOfLife|
@@ -51,9 +51,9 @@ test04AliveCellWithMoreThanThreeAliveNeighDies
 	gameOfLife := GameOfLife withLiveCells: { 1@1. 2@0. 1@0. 1@2. 0@1 } withBoard: aThreePerThreeBoard.
 	gameOfLife nextGeneration.
 	
-	self assert: (gameOfLife isDeadAt: 1@1) ! !
+	self assert: (gameOfLife isDead: 1@1) ! !
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:27:37'!
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:13'!
 test05DeadCellWithThreeAliveNeighResurects
 
 	|gameOfLife|
@@ -62,16 +62,56 @@ test05DeadCellWithThreeAliveNeighResurects
 	gameOfLife := GameOfLife withLiveCells: { 2@0. 1@0. 0@0 } withBoard: aThreePerThreeBoard.
 	gameOfLife nextGeneration.
 	
-	self deny: (gameOfLife isDeadAt: 1@1) ! !
+	self deny: (gameOfLife isDead: 1@1) ! !
 
-!GOLTest methodsFor: 'tests' stamp: 'lm 5/15/2017 20:27:54'!
-test06CreateCellOutsideBounds
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 15:38:42'!
+test06CanNotCreateCellOutsideBounds
 
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 1@4 } withBoard: aThreePerThreeBoard ]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
-			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+			self assert: anError messageText equals: GameOfLife outOfBoundsMessage]! !
+
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 15:40:02'!
+test07CanNotCreateGameOfLifeWithNoAliveCells
+
+	self 
+		should: [ GameOfLife withLiveCells: {} withBoard: aThreePerThreeBoard ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: GameOfLife noAliveCellsAtStartMessage]! !
+
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:18'!
+test08DuplicatedAliveCellsPassedAtStartAreTakenAsOne
+
+	|gameOfLife|	
+	
+	gameOfLife := GameOfLife withLiveCells: { 1@0. 1@0. 1@0 } withBoard: aThreePerThreeBoard.
+	
+	self assert: ((gameOfLife numberOfAliveNeighboursOf: 1@1) = 1 and:[gameOfLife isAlive:1@0] and:[gameOfLife isDead: 1@1]).! !
+
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:23'!
+test09DeadCellWithLessThanThreeAliveNeighRemainsDead
+	"este test pasó de una porque se debería haber hecho antes, para cuando lo agregamos ya se había implementado la solución, lo agregamos por una cuestión de completitud pero no sería la forma correcta de hacer TDD"
+	|gameOfLife|
+	
+	
+	gameOfLife := GameOfLife withLiveCells: { 2@0. 1@0. } withBoard: aThreePerThreeBoard.
+	gameOfLife nextGeneration.
+	
+	self assert: (gameOfLife isDead: 1@1) ! !
+
+!GOLTest methodsFor: 'tests' stamp: 'fz 5/16/2017 16:22:29'!
+test10DeadCellWithMoreThanThreeAliveNeighRemainsDead
+	"este test pasó de una porque se debería haber hecho antes, para cuando lo agregamos ya se había implementado la solución, lo agregamos por una cuestión de completitud pero no sería la forma correcta de hacer TDD"
+	|gameOfLife|
+	
+	
+	gameOfLife := GameOfLife withLiveCells: { 2@0. 1@0. 0@0. 2@2} withBoard: aThreePerThreeBoard.
+	gameOfLife nextGeneration.
+	
+	self assert: (gameOfLife isDead: 1@1) ! !
 
 
 !classDefinition: #GameOfLife category: #GOL!
@@ -100,10 +140,10 @@ initializeWith: aCollectionOfAliveCells withBoard: aRectangle
 	aliveCells := aCollectionOfAliveCells.! !
 
 
-!GameOfLife methodsFor: 'testing' stamp: 'lm 5/15/2017 20:08:44'!
+!GameOfLife methodsFor: 'testing' stamp: 'fz 5/16/2017 16:22:37'!
 hasToResurrect: aCell
 
-	^(self isDeadAt: aCell) and: [(self numberOfAliveNeighboursOf: aCell) = 3].! !
+	^(self isDead: aCell) and: [(self numberOfAliveNeighboursOf: aCell) = 3].! !
 
 !GameOfLife methodsFor: 'testing' stamp: 'lm 5/15/2017 20:07:44'!
 hasToSurvive: aCell
@@ -119,8 +159,8 @@ isAlive: aCell
 
 	^(aliveCells includes: aCell) ! !
 
-!GameOfLife methodsFor: 'testing' stamp: 'HAW 5/10/2017 10:28:24'!
-isDeadAt: aCell
+!GameOfLife methodsFor: 'testing' stamp: 'fz 5/16/2017 16:22:46'!
+isDead: aCell
 
 	^(aliveCells includes: aCell) not! !
 
@@ -153,9 +193,22 @@ selectFromAllCells: aCondition
 GameOfLife class
 	instanceVariableNames: ''!
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'fz 5/15/2017 19:13:26'!
+!GameOfLife class methodsFor: 'messages' stamp: 'fz 5/16/2017 15:41:24'!
+noAliveCellsAtStartMessage
+	^'se necesita al menos una celula viva para empezar'.! !
+
+!GameOfLife class methodsFor: 'messages' stamp: 'fz 5/16/2017 15:35:46'!
+outOfBoundsMessage
+	^'celda fuera de rango'.! !
+
+
+!GameOfLife class methodsFor: 'initialization' stamp: 'fz 5/16/2017 16:15:11'!
 withLiveCells: aCollectionOfAliveCells withBoard: aBoard
 	
-	(aCollectionOfAliveCells allSatisfy: [:aCell | (aBoard containsPoint: aCell)]) ifFalse: [self error: 'celda fuera de rango'].
+	(aCollectionOfAliveCells isEmpty) ifTrue: [self error: self noAliveCellsAtStartMessage].
 	
-	^self new initializeWith: aCollectionOfAliveCells withBoard: aBoard.! !
+	(aCollectionOfAliveCells allSatisfy: [:aCell | (aBoard containsPoint: aCell)]) ifFalse: [self error: self outOfBoundsMessage].
+	
+	"se convierte la coleccion de celulas vivas a un set para que no haya repetidos"
+	
+	^self new initializeWith: aCollectionOfAliveCells asSet withBoard: aBoard.! !
