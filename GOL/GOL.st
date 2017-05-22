@@ -164,6 +164,11 @@ isDead: aCell
 
 	^(aliveCells includes: aCell) not! !
 
+!GameOfLife methodsFor: 'testing' stamp: 'HAW 5/10/2017 10:28:24'!
+isDeadAt: aCell
+
+	^(aliveCells includes: aCell) not! !
+
 !GameOfLife methodsFor: 'testing' stamp: 'HAW 5/10/2017 10:29:35'!
 numberOfAliveNeighboursOf: aCell
 
