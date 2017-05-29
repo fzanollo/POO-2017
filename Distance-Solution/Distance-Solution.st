@@ -147,21 +147,6 @@ test23alIntervaloUnMetroADiezKmPorCincoCmSeLePuedePasarUnaTareaARealizar
 	self assert: ( unMetro to: diezKilometros by: cincoCentimetros do:[:i|distanceIntervalCounter := distanceIntervalCounter + 1]) equals: 
 	(1 to: 10000 by: 5/100 do:[:i|numberIntervalCounter := numberIntervalCounter + 1]).! !
 
-!DistanceTest methodsFor: 'tests' stamp: 'fz 5/29/2017 18:11:14'!
-test24noSePuedenCrearDistanciasNegativasEnMetros
-
-	self should: [Distance withValueInMeters: -1]
-		  raise: Error - MessageNotUnderstood
-		  withExceptionDo: [:anError | self assert: anError messageText equals: Distance negativeDistanceMessage].! !
-
-!DistanceTest methodsFor: 'tests' stamp: 'fz 5/29/2017 18:15:01'!
-test25noSePuedenCrearDistanciasNegativasEnCentimetros
-"ni en ninguna otra unidad"
-
-	self should: [Distance withValue: -1 andMagnitudeInMeters: 1/100]
-		  raise: Error - MessageNotUnderstood
-		  withExceptionDo: [:anError | self assert: anError messageText equals: Distance negativeDistanceMessage]! !
-
 
 !DistanceTest methodsFor: 'setUp' stamp: 'fz 5/29/2017 17:47:22'!
 setUp
@@ -263,24 +248,16 @@ valueInMeters
 Distance class
 	instanceVariableNames: ''!
 
-!Distance class methodsFor: 'initialization' stamp: 'fz 5/29/2017 18:12:17'!
+!Distance class methodsFor: 'initialization' stamp: 'fz 5/29/2017 19:13:44'!
 withValue: aValue andMagnitudeInMeters: aProportion
-
-	(aValue<0) ifTrue: [^self error: self negativeDistanceMessage].
 	
 	^self new initializeWithValue: aValue andMagnitudeInMeters: aProportion.! !
 
-!Distance class methodsFor: 'initialization' stamp: 'fz 5/29/2017 18:12:51'!
+!Distance class methodsFor: 'initialization' stamp: 'fz 5/29/2017 19:13:49'!
 withValueInMeters: aValue 
-
-	(aValue<0) ifTrue: [^self error: self negativeDistanceMessage].
 	
 	^self new initializeWithValue: aValue andMagnitudeInMeters: 1.! !
 
-
-!Distance class methodsFor: 'messages' stamp: 'fz 5/29/2017 18:09:33'!
-negativeDistanceMessage
-	^'No pueden crearse distancias negativas'.! !
 
 
 !classDefinition: #DistanceFactory category: #'Distance-Solution'!
