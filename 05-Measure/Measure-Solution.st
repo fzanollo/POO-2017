@@ -1,11 +1,11 @@
 !classDefinition: #MeasureTest category: #'Measure-Solution'!
 TestCase subclass: #MeasureTest
-	instanceVariableNames: 'unKg otroKg dosKg milGramos kilogramos gramos litros unLitro unGramo mililitros milMl dosLitros diezPesos cincuentaDolares pesos dolares ceroKg ceroLitros ceroGramos celsius fahrenheit cincoCelsius cuarentaYUnFahrenheit'
+	instanceVariableNames: 'unKg otroKg dosKg milGramos kilogramos gramos litros unLitro unGramo mililitros milMl dosLitros diezPesos cincuentaDolares pesos dolares ceroKg ceroLitros ceroGramos celsius fahrenheit cincoCelsius cuarentaYUnFahrenheit dosMilGramos'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Measure-Solution'!
 
-!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/5/2017 20:55:00'!
+!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:21:18'!
 setUp
 "Gramos"
 	gramos := UnitBase withName:'Gramos'.
@@ -17,6 +17,7 @@ setUp
 	dosKg := Measure withAmount: 2 andUnit: kilogramos.
 	
 	milGramos := Measure withAmount: 1000 andUnit: gramos.
+	dosMilGramos := Measure withAmount: 2000 andUnit: gramos.
 	unGramo := Measure withAmount: 1 andUnit: gramos.
 
 "Litros"
@@ -94,6 +95,27 @@ test12laRelacionConLaUnidadBasePuedeSerCualquierCombinacionDeOperandos
 	
 	self assert: cincoCelsius  equals: cuarentaYUnFahrenheit.! !
 
+!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 19:45:21'!
+test13sePuedenSumarMedidasDeDistintoTipo
+	"10 pesos + 50 dolares = 10 pesos + 50 dolares"
+	
+	self assert: diezPesos + cincuentaDolares equals: cincuentaDolares + diezPesos.! !
+
+!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:18:40'!
+test14sePuedenSumarMedidasDeDistintoTipoAColeccionesDeMedidas
+	
+	self assert: diezPesos + cincuentaDolares + dosLitros equals: cincuentaDolares + dosLitros + diezPesos.! !
+
+!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:49:37'!
+test15coleccionesDeMedidasSumanMedidasDelMismoTipo
+	
+	self assert: unKg + dosLitros + dosMilGramos equals: dosKg + dosLitros + milGramos.! !
+
+!MeasureTest methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:51:31'!
+test16sePuedenRestarMedidasDeDistintoTipo
+	
+	self assert: dosKg - cincuentaDolares equals: cincuentaDolares - dosKg.! !
+
 
 !classDefinition: #Measure category: #'Measure-Solution'!
 Object subclass: #Measure
@@ -106,9 +128,11 @@ Object subclass: #Measure
 * aNumber
 	^self class withAmount: (amount * aNumber) andUnit: unit.! !
 
-!Measure methodsFor: 'as yet unclassified' stamp: 'fz 6/5/2017 20:10:23'!
+!Measure methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:09:44'!
 + aMeasure 
-	(unit baseUnit = (aMeasure unit) baseUnit) ifTrue: [^self class withAmount: (self amountInBaseUnit + aMeasure amountInBaseUnit) andUnit: unit baseUnit].! !
+	(unit baseUnit = aMeasure unit baseUnit) ifTrue: [^self class withAmount: (self amountInBaseUnit + aMeasure amountInBaseUnit) andUnit: unit baseUnit].
+	
+	^ MeasureCollection with: self with: aMeasure.! !
 
 !Measure methodsFor: 'as yet unclassified' stamp: 'fz 6/5/2017 18:23:21'!
 - aMeasure 
@@ -161,6 +185,48 @@ withAmount: anAmount
 !Measure class methodsFor: 'as yet unclassified' stamp: 'fz 6/1/2017 19:59:11'!
 withAmount: anAmount andUnit: aUnit
 	^self new initializeWithAmount: anAmount andUnit: aUnit.! !
+
+
+!classDefinition: #MeasureCollection category: #'Measure-Solution'!
+Object subclass: #MeasureCollection
+	instanceVariableNames: 'measuresDictionary'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Measure-Solution'!
+
+!MeasureCollection methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:46:21'!
++ aMeasure 
+	|anotherMeasure|
+	
+	anotherMeasure := measuresDictionary at: aMeasure unit baseUnit ifAbsent: [ Measure withAmount: 0 andUnit: aMeasure unit].
+	
+	measuresDictionary add: (Association key: aMeasure unit baseUnit value: aMeasure + anotherMeasure).! !
+
+!MeasureCollection methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:15:20'!
+= aMeasureCollection
+
+	^measuresDictionary = aMeasureCollection measuresDictionary.! !
+
+!MeasureCollection methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:16:05'!
+measuresDictionary
+	^measuresDictionary.! !
+
+!MeasureCollection methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:13:31'!
+with: aMeasure with: anotherMeasure
+	measuresDictionary := Dictionary new.
+	
+	measuresDictionary add: (Association key: aMeasure unit baseUnit value: aMeasure).
+	measuresDictionary add: (Association key: anotherMeasure unit baseUnit value: anotherMeasure).! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MeasureCollection class' category: #'Measure-Solution'!
+MeasureCollection class
+	instanceVariableNames: ''!
+
+!MeasureCollection class methodsFor: 'as yet unclassified' stamp: 'fz 6/6/2017 20:10:46'!
+with: aMeasure with: anotherMeasure
+	^self new with: aMeasure with: anotherMeasure.! !
 
 
 !classDefinition: #Unit category: #'Measure-Solution'!
