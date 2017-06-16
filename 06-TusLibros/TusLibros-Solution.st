@@ -1,178 +1,196 @@
 !classDefinition: #CarritoTest category: #'TusLibros-Solution'!
 TestCase subclass: #CarritoTest
-	instanceVariableNames: 'client1 book1 book2 book1clon'
+	instanceVariableNames: 'client1ID client1Pwd book1 book2'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:52:51'!
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:38:56'!
 setUp
 
-	client1 := Client withID: 1 withPassword: 'holaquehace'.
-	book1 := Book withISBN: 1.
-	book1clon := Book withISBN: 1.
-	book2 := Book withISBN: 2.! !
-
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:23:31'!
-test01unCarritoNuevoEstáVacio
-
-	|aCart |
-
-	aCart := Carrito ofClient: client1.
+	client1ID := 'sarasa'.
+	client1Pwd := '1234'.
 	
-	self assert: aCart isEmpty.
+	book1 := 'isbn1'.
+	book2 := 'isbn2'.! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 16:43:50'!
+test01UnCarritoNuevoEstaVacio
+	|carrito| 
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	
+	self assert: carrito isEmpty.
+	! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:40:23'!
+test02SiAgregoAlgoDejaDeEstarVacio
+	|carrito| 
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	
+	self deny: carrito isEmpty.
+	! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:40:05'!
+test03SiAgregoAlgoTieneQueEstar
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	
+	self assert: (carrito hasItem: book1).
+	! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:39:56'!
+test04SiAgregoDosLibrosElTamañoEsAdecuadoYAmbosEstan
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	carrito add: book2 withQuantity: 1.
+	
+	self assert: carrito size equals: 2.
+	self assert: (carrito hasItem: book1).
+	self assert: (carrito hasItem: book2).
+	! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:39:49'!
+test05UnLibroNoAgregadoNoEsta
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	
+	self assert: (carrito hasItem: book1).
+	self deny: (carrito hasItem: book2).
+	! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:43:44'!
+test06SePuedenAgregarLibrosConCantidades
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 2.
+	
+	self assert: (carrito quantityOf: book1) equals: 2.
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:50:42'!
-test02alAgregarUnElementoAlCarritoYaNoEstaVacio
-
-	|aCart |
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:45:10'!
+test07PreguntarCantidadDeUnLibroAgregadoDevuelveCorrectamenteAlHaberMasDeUno
+	|carrito|
 	
-	aCart := Carrito ofClient: client1.
-	aCart addBook: book1 withQuantity: 2.
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 2.
+	carrito add: book2 withQuantity: 4.
 	
-	self deny: aCart isEmpty.
-	
+	self assert: (carrito quantityOf: book1) equals: 2.
+	self assert: (carrito quantityOf: book2) equals: 4.
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:50:53'!
-test03alAgregarUnElementoAlCarritoEstaElElemYElTamañoDelCarritoEsUno
-
-	|aCart bookQuantity|
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:48:41'!
+test08PreguntarCantidadDeUnLibroNoAgregadoDevuelveCero
+	|carrito|
 	
-	bookQuantity := 2.
-
-	aCart := Carrito ofClient: client1.
-	aCart addBook: book1 withQuantity: bookQuantity.
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	
-	self deny: aCart isEmpty.
-	self assert: aCart size equals: 1.
-	self assert: (aCart hasBook: book1).
-	
+	self assert: (carrito quantityOf: book1) equals: 0.
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 19:14:39'!
-test04preguntarPorUnElementoQueNoEstaDevuelveFalso
-
-	|aCart bookQuantity|
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:57:32'!
+test09AgregarCantidadesNegativasDaError
+	|carrito|
 	
-	bookQuantity := 2.
-
-	aCart := Carrito ofClient: client1.
-	aCart addBook: book1 withQuantity: bookQuantity.
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	
-	self deny: aCart isEmpty.
-	self assert: aCart size equals: 1.
-	self deny: (aCart hasBook: book2).
+	self 
+		should: [carrito add: book1 withQuantity: -1]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError|
+			self assert: anError messageText equals: Carrito negativeQuantityErrorMessage].! !
+
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:01:08'!
+test10AlSacarElUnicoElementoElCarritoEstaVacioNuevamente
+	|carrito|
 	
-
-	! !
-
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:50:11'!
-test05alAgregarDosLibrosDistintosElTamañoEsDosYEstan
-
-	|aCart bookQuantity|
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	carrito removeAll: book1.
 	
-	bookQuantity := 2.
+	self assert: (carrito isEmpty).! !
 
-	aCart := Carrito ofClient: client1.
-	aCart addBook: book1 withQuantity: bookQuantity.
-	aCart addBook: book2 withQuantity: bookQuantity.
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:03:08'!
+test11AlSacarUnElementoYaNoEstaEnElCarrito
+	|carrito|
 	
-	self deny: aCart isEmpty.
-	self assert: aCart size equals: 2.
-	self assert: (aCart hasBook: book2).
-	self assert: (aCart hasBook: book1).
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 1.
+	carrito removeAll: book1.
 	
+	self deny: (carrito hasItem: book1).! !
 
-	! !
-
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 19:10:08'!
-test06dosLibrosConMismoISBNSonConsideradosIguales
-
-	|aCart bookQuantity|
+!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:09:56'!
+test12SacarUnElementoNoAgregadoDaError
+	|carrito|
 	
-	bookQuantity := 2.
-
-	aCart := Carrito ofClient: client1.
-	aCart addBook: book1 withQuantity: bookQuantity.
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	
-	self assert: book1 = book1clon.
-	
-	self assert: (aCart hasBook: book1clon).
-	
-
-	! !
-
-
-!classDefinition: #Book category: #'TusLibros-Solution'!
-Object subclass: #Book
-	instanceVariableNames: 'isbn'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros-Solution'!
-
-!Book methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:20:52'!
-withISBN: anISBN
-	isbn := anISBN.! !
-
-
-!Book methodsFor: 'testing' stamp: 'fz 6/12/2017 18:22:06'!
-isbn
-	^isbn.! !
-
-
-!Book methodsFor: 'as yet unclassified' stamp: 'fz 6/12/2017 18:56:00'!
-= aBook
-
-	^(self isbn = aBook isbn).! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Book class' category: #'TusLibros-Solution'!
-Book class
-	instanceVariableNames: ''!
-
-!Book class methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:20:28'!
-withISBN: anISBN
-	^self new withISBN: anISBN.! !
+	self 
+		should: [carrito removeAll: book1]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError|
+			self assert: anError messageText equals: Carrito elementNotFoundErrorMessage].! !
 
 
 !classDefinition: #Carrito category: #'TusLibros-Solution'!
 Object subclass: #Carrito
-	instanceVariableNames: 'contra idCliente size content'
+	instanceVariableNames: 'size clientID password content'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!Carrito methodsFor: 'adding' stamp: 'fz 6/12/2017 19:15:32'!
-addBook: aBook withQuantity: aQuantity
-	size := size + 1.
-	content add: (Association key: aBook isbn value: aQuantity).! !
+!Carrito methodsFor: 'testing' stamp: 'fz 6/16/2017 18:11:51'!
+hasItem: aBookISBN
+	^content keys hasLiteral: aBookISBN.! !
 
-
-!Carrito methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:30:48'!
-withClientID: aClientID withPassword: aPassword
-	contra := aPassword.
-	idCliente := aClientID.
-	size:=0.
-	content := Dictionary new. ! !
-
-
-!Carrito methodsFor: 'testing' stamp: 'fz 6/12/2017 19:15:39'!
-hasBook: aBook
-	^content includesKey: aBook isbn.! !
-
-!Carrito methodsFor: 'testing' stamp: 'fz 6/12/2017 17:57:16'!
+!Carrito methodsFor: 'testing' stamp: 'fz 6/16/2017 16:33:03'!
 isEmpty
-	^(size = 0).! !
+	^size = 0.! !
 
-!Carrito methodsFor: 'testing' stamp: 'fz 6/12/2017 18:09:04'!
+!Carrito methodsFor: 'testing' stamp: 'fz 6/16/2017 19:49:06'!
+quantityOf: aBookISBN
+	^ content at: aBookISBN ifAbsent: [0].! !
+
+!Carrito methodsFor: 'testing' stamp: 'fz 6/16/2017 16:49:48'!
 size
 	^size.! !
+
+
+!Carrito methodsFor: 'adding' stamp: 'fz 6/16/2017 19:57:18'!
+add: aBookISBN withQuantity: aQuantity
+
+	(aQuantity < 0) ifTrue: [^ self error: self class negativeQuantityErrorMessage].
+	
+	size := size + 1.
+	content add:(Association key: aBookISBN value: aQuantity).! !
+
+
+!Carrito methodsFor: 'initialize' stamp: 'fz 6/16/2017 17:42:51'!
+forClient: aClientID withPassword: aPassword 
+	clientID := aClientID.
+	password := aPassword.
+	
+	size := 0.
+	content :=  Dictionary new.! !
+
+
+!Carrito methodsFor: 'removing' stamp: 'fz 6/16/2017 20:09:53'!
+removeAll: aBookISBN
+	content removeKey: aBookISBN ifAbsent: [self error: self class elementNotFoundErrorMessage].
+	size := size-1.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -180,38 +198,15 @@ size
 Carrito class
 	instanceVariableNames: ''!
 
-!Carrito class methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:24:31'!
-ofClient: aClient 
-	^self new withClientID: aClient id withPassword: aClient password.! !
-
-
-!classDefinition: #Client category: #'TusLibros-Solution'!
-Object subclass: #Client
-	instanceVariableNames: 'id password'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros-Solution'!
-
-!Client methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:19:51'!
-withID: anID withPassword: aPassword
-	id := anID.
-	password := aPassword .! !
+!Carrito class methodsFor: 'initialization' stamp: 'fz 6/16/2017 16:37:48'!
+forClient: aClientID withPassword: aPassword 
+	^self new forClient: aClientID withPassword: aPassword.! !
 
 
-!Client methodsFor: 'testing' stamp: 'fz 6/12/2017 18:21:25'!
-id
-	^id.! !
+!Carrito class methodsFor: 'messages' stamp: 'fz 6/16/2017 20:10:27'!
+elementNotFoundErrorMessage
+	^'element not found'.! !
 
-!Client methodsFor: 'testing' stamp: 'fz 6/12/2017 18:21:48'!
-password
-	^password.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Client class' category: #'TusLibros-Solution'!
-Client class
-	instanceVariableNames: ''!
-
-!Client class methodsFor: 'initialization' stamp: 'fz 6/12/2017 18:19:16'!
-withID: anID withPassword: aPassword
-	^self new withID: anID withPassword: aPassword.! !
+!Carrito class methodsFor: 'messages' stamp: 'fz 6/16/2017 19:58:34'!
+negativeQuantityErrorMessage
+	^ 'negative quantities not allowed'.! !
