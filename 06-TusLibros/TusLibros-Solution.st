@@ -208,6 +208,30 @@ test17SacarCantidadesNegativasOCeroDaError
 		withExceptionDo: [:anError|
 			self assert: anError messageText equals: Carrito negativeOrNullQuantityErrorMessage].! !
 
+!CarritoTest methodsFor: 'tests' stamp: 'lm 6/17/2017 17:34:38'!
+test18ListarUnCarritoVacioDevuelveUnaListaVacia
+	|carrito listaVacia|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	
+	listaVacia := OrderedCollection new.
+	self assert: carrito listCart  equals: listaVacia.
+	! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'lm 6/17/2017 17:38:14'!
+test19ListarUnCarritoDevuelveUnaListaDelContenido
+	|carrito lista|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	
+	carrito add: book1 withQuantity: 2.
+	
+	lista := OrderedCollection with: book1 with: 2.
+	
+	
+	self assert: carrito listCart equals: lista.
+	! !
+
 
 !CarritoTest methodsFor: 'setUp' stamp: 'fz 6/16/2017 19:38:56'!
 setUp
@@ -278,6 +302,21 @@ remove: aBookISBN quantity: aQuantity
 	newQuantity := (self quantityOf: aBookISBN) - aQuantity.
 	
 	(newQuantity <= 0) ifTrue:[self remove: aBookISBN] ifFalse:[content at: aBookISBN put: (newQuantity)].! !
+
+
+!Carrito methodsFor: 'as yet unclassified' stamp: 'lm 6/17/2017 17:47:07'!
+listCart
+	
+	|lista| 
+	
+	lista := OrderedCollection new.
+	
+	(content keys) do: [ :bookISBN |
+			lista add: bookISBN.
+			lista add: (self quantityOf: bookISBN ).
+		].
+	
+	^lista.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
