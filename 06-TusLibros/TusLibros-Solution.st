@@ -5,16 +5,7 @@ TestCase subclass: #CarritoTest
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:38:56'!
-setUp
-
-	client1ID := 'sarasa'.
-	client1Pwd := '1234'.
-	
-	book1 := 'isbn1'.
-	book2 := 'isbn2'.! !
-
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 16:43:50'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 16:43:50'!
 test01UnCarritoNuevoEstaVacio
 	|carrito| 
 	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
@@ -22,7 +13,7 @@ test01UnCarritoNuevoEstaVacio
 	self assert: carrito isEmpty.
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:40:23'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:40:23'!
 test02SiAgregoAlgoDejaDeEstarVacio
 	|carrito| 
 	
@@ -32,7 +23,7 @@ test02SiAgregoAlgoDejaDeEstarVacio
 	self deny: carrito isEmpty.
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:40:05'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:40:05'!
 test03SiAgregoAlgoTieneQueEstar
 	|carrito|
 	
@@ -42,7 +33,7 @@ test03SiAgregoAlgoTieneQueEstar
 	self assert: (carrito hasItem: book1).
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:39:56'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:39:56'!
 test04SiAgregoDosLibrosElTamañoEsAdecuadoYAmbosEstan
 	|carrito|
 	
@@ -55,7 +46,7 @@ test04SiAgregoDosLibrosElTamañoEsAdecuadoYAmbosEstan
 	self assert: (carrito hasItem: book2).
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:39:49'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:39:49'!
 test05UnLibroNoAgregadoNoEsta
 	|carrito|
 	
@@ -66,7 +57,7 @@ test05UnLibroNoAgregadoNoEsta
 	self deny: (carrito hasItem: book2).
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:43:44'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:43:44'!
 test06SePuedenAgregarLibrosConCantidades
 	|carrito|
 	
@@ -77,7 +68,7 @@ test06SePuedenAgregarLibrosConCantidades
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:45:10'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:45:10'!
 test07PreguntarCantidadDeUnLibroAgregadoDevuelveCorrectamenteAlHaberMasDeUno
 	|carrito|
 	
@@ -90,7 +81,7 @@ test07PreguntarCantidadDeUnLibroAgregadoDevuelveCorrectamenteAlHaberMasDeUno
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:48:41'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/16/2017 19:48:41'!
 test08PreguntarCantidadDeUnLibroNoAgregadoDevuelveCero
 	|carrito|
 	
@@ -100,49 +91,132 @@ test08PreguntarCantidadDeUnLibroNoAgregadoDevuelveCero
 
 	! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 19:57:32'!
-test09AgregarCantidadesNegativasDaError
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:18:22'!
+test09AgregarCantidadesNegativasOCeroDaError
 	|carrito|
 	
 	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	
 	self 
+		should: [carrito add: book1 withQuantity: 0]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError|
+			self assert: anError messageText equals: Carrito negativeOrNullQuantityErrorMessage].
+	
+	self 
 		should: [carrito add: book1 withQuantity: -1]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Carrito negativeQuantityErrorMessage].! !
+			self assert: anError messageText equals: Carrito negativeOrNullQuantityErrorMessage].! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:01:08'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:51:09'!
 test10AlSacarElUnicoElementoElCarritoEstaVacioNuevamente
 	|carrito|
 	
 	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	carrito add: book1 withQuantity: 1.
-	carrito removeAll: book1.
+	carrito remove: book1.
 	
 	self assert: (carrito isEmpty).! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:03:08'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:51:16'!
 test11AlSacarUnElementoYaNoEstaEnElCarrito
 	|carrito|
 	
 	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	carrito add: book1 withQuantity: 1.
-	carrito removeAll: book1.
+	carrito remove: book1.
 	
 	self deny: (carrito hasItem: book1).! !
 
-!CarritoTest methodsFor: 'as yet unclassified' stamp: 'fz 6/16/2017 20:09:56'!
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:51:23'!
 test12SacarUnElementoNoAgregadoDaError
 	|carrito|
 	
 	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
 	
 	self 
-		should: [carrito removeAll: book1]
+		should: [carrito remove: book1]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [:anError|
 			self assert: anError messageText equals: Carrito elementNotFoundErrorMessage].! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:23:15'!
+test13AgregarUnLibroExistenteAgregaALaCantidadExistente
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+
+	carrito add: book1 withQuantity: 1.	
+	carrito add: book1 withQuantity: 2.
+	
+	self assert: (carrito quantityOf: book1) equals: 3.
+	! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:32:39'!
+test14AgregarUnLibroExistenteNoAumentaElTamañoDelCarrito
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+
+	carrito add: book1 withQuantity: 1.	
+	carrito add: book1 withQuantity: 2.
+	
+	self assert: (carrito size) equals: 1.
+	! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:35:00'!
+test15SePuedeSacarCiertaCantidadDeUnLibroAgregado
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 3.	
+	
+	carrito remove: book1 quantity: 2.
+	
+	self assert: (carrito quantityOf: book1) equals: 1.
+	! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:38:00'!
+test16AlSacarTodosOMasCantidadDeUnLibroAgregadoSeQuita
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 3.	
+	
+	carrito remove: book1 quantity: 3.
+	
+	self deny: (carrito hasItem: book1).
+	! !
+
+!CarritoTest methodsFor: 'tests' stamp: 'fz 6/17/2017 16:52:48'!
+test17SacarCantidadesNegativasOCeroDaError
+	|carrito|
+	
+	carrito := Carrito forClient: client1ID withPassword: client1Pwd.
+	carrito add: book1 withQuantity: 3.
+	
+	self 
+		should: [carrito remove: book1 quantity: 0]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError|
+			self assert: anError messageText equals: Carrito negativeOrNullQuantityErrorMessage].
+	
+	self 
+		should: [carrito remove: book1 quantity: -1]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError|
+			self assert: anError messageText equals: Carrito negativeOrNullQuantityErrorMessage].! !
+
+
+!CarritoTest methodsFor: 'setUp' stamp: 'fz 6/16/2017 19:38:56'!
+setUp
+
+	client1ID := 'sarasa'.
+	client1Pwd := '1234'.
+	
+	book1 := 'isbn1'.
+	book2 := 'isbn2'.! !
 
 
 !classDefinition: #Carrito category: #'TusLibros-Solution'!
@@ -169,13 +243,16 @@ size
 	^size.! !
 
 
-!Carrito methodsFor: 'adding' stamp: 'fz 6/16/2017 19:57:18'!
+!Carrito methodsFor: 'adding' stamp: 'fz 6/17/2017 16:30:33'!
 add: aBookISBN withQuantity: aQuantity
-
-	(aQuantity < 0) ifTrue: [^ self error: self class negativeQuantityErrorMessage].
+	|quantity|
 	
-	size := size + 1.
-	content add:(Association key: aBookISBN value: aQuantity).! !
+	(aQuantity <= 0) ifTrue: [^ self error: self class negativeOrNullQuantityErrorMessage].
+
+	(self hasItem: aBookISBN) ifFalse: [size := size + 1].
+	
+	quantity := aQuantity + (self quantityOf: aBookISBN).	
+	content add:(Association key: aBookISBN value: quantity).! !
 
 
 !Carrito methodsFor: 'initialize' stamp: 'fz 6/16/2017 17:42:51'!
@@ -187,10 +264,20 @@ forClient: aClientID withPassword: aPassword
 	content :=  Dictionary new.! !
 
 
-!Carrito methodsFor: 'removing' stamp: 'fz 6/16/2017 20:09:53'!
-removeAll: aBookISBN
+!Carrito methodsFor: 'removing' stamp: 'fz 6/17/2017 16:51:43'!
+remove: aBookISBN
 	content removeKey: aBookISBN ifAbsent: [self error: self class elementNotFoundErrorMessage].
 	size := size-1.! !
+
+!Carrito methodsFor: 'removing' stamp: 'fz 6/17/2017 16:51:03'!
+remove: aBookISBN quantity: aQuantity
+	|newQuantity|
+	
+	(aQuantity <= 0) ifTrue: [^ self error: self class negativeOrNullQuantityErrorMessage].
+	
+	newQuantity := (self quantityOf: aBookISBN) - aQuantity.
+	
+	(newQuantity <= 0) ifTrue:[self remove: aBookISBN] ifFalse:[content at: aBookISBN put: (newQuantity)].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -207,6 +294,6 @@ forClient: aClientID withPassword: aPassword
 elementNotFoundErrorMessage
 	^'element not found'.! !
 
-!Carrito class methodsFor: 'messages' stamp: 'fz 6/16/2017 19:58:34'!
-negativeQuantityErrorMessage
-	^ 'negative quantities not allowed'.! !
+!Carrito class methodsFor: 'messages' stamp: 'fz 6/17/2017 16:48:58'!
+negativeOrNullQuantityErrorMessage
+	^ 'negative or null quantities not allowed'.! !
