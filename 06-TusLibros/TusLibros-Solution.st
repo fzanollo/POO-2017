@@ -1,11 +1,11 @@
-!classDefinition: #CartTest category: #'TusLibros-Solution'!
-TestCase subclass: #CartTest
-	instanceVariableNames: 'emptyCatalog book1 book2 book1Catalog'
+!classDefinition: #TusLibrosTest category: #'TusLibros-Solution'!
+TestCase subclass: #TusLibrosTest
+	instanceVariableNames: 'emptyCatalog book1 book2 book1Catalog emptyCart notEmptyCart expiredYesterdayCreditCard validUntilTodayCreditCard salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:44:05'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:44:05'!
 test01NoSePuedenAgregarLibrosQueNoSonDeLaEditorial
 	|cart|
 	
@@ -19,7 +19,7 @@ test01NoSePuedenAgregarLibrosQueNoSonDeLaEditorial
 			self deny: (cart hasBook: book1).
 		].! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:32:30'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:32:30'!
 test02UnCarritoNuevoEstaVacio
 	|cart|
 	
@@ -27,7 +27,7 @@ test02UnCarritoNuevoEstaVacio
 	
 	self assert: cart isEmpty.! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:48'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:48'!
 test03SiAgregoUnLibroDejaDeEstarVacio
 	|cart|
 	
@@ -37,7 +37,7 @@ test03SiAgregoUnLibroDejaDeEstarVacio
 	
 	self deny: cart isEmpty. ! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:36'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:36'!
 test04SiAgregoUnLibroTieneQueEstarEnElCarrito
 	|cart|
 	
@@ -47,7 +47,7 @@ test04SiAgregoUnLibroTieneQueEstarEnElCarrito
 	
 	self assert: (cart hasBook: book1).! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:23'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:23'!
 test05UnLibroNoAgregadoNoEsta
 	|cart|
 	
@@ -55,7 +55,7 @@ test05UnLibroNoAgregadoNoEsta
 	
 	self deny: (cart hasBook: book1).! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:13'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:58:13'!
 test06SiAgregoDosLibrosElTamañoEsDos
 	|cart|
 	
@@ -66,7 +66,7 @@ test06SiAgregoDosLibrosElTamañoEsDos
 	
 	self assert: cart size equals: 2.! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:04:25'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:04:25'!
 test07SePuedenAgregarLibrosEnCantidades
 	|cart|
 	
@@ -76,7 +76,7 @@ test07SePuedenAgregarLibrosEnCantidades
 	
 	self assert: (cart hasBook: book1).! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:04:03'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:04:03'!
 test08SePuedePreguntarPorLaCantidadDeUnLibro
 	|cart|
 	
@@ -86,7 +86,7 @@ test08SePuedePreguntarPorLaCantidadDeUnLibro
 	
 	self assert: (cart quantityOf: book1) equals: 2.! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:06'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:06'!
 test09NoSePuedenAgregarLibrosQueNoSonDeLaEditorialEnCantidades
 	|cart|
 	
@@ -100,7 +100,7 @@ test09NoSePuedenAgregarLibrosQueNoSonDeLaEditorialEnCantidades
 			self deny: (cart hasBook: book1).
 		].! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:13'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:13'!
 test10AgregarCantidadesMenoresOIgualesACeroDaError
 	|cart|
 	
@@ -122,7 +122,7 @@ test10AgregarCantidadesMenoresOIgualesACeroDaError
 			self deny: (cart hasBook: book1).
 		].! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:17'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:17'!
 test11AgregarCantidadesNoEnterasDaError
 	|cart|
 	
@@ -136,8 +136,82 @@ test11AgregarCantidadesNoEnterasDaError
 			self deny: (cart hasBook: book1).
 		].! !
 
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/20/2017 17:27:59'!
+test12CheckoutConUnaTarjetaVencidaDaError
 
-!CartTest methodsFor: 'setUp' stamp: 'fz 6/19/2017 18:58:11'!
+	|cashier salesBook|
+	
+	salesBook := LinkedList new.
+	
+	cashier := Cashier withCart: notEmptyCart withCard: expiredYesterdayCreditCard withCurrentDate: Date today withSalesBook: salesBook.
+	
+	self should: [cashier checkOut.]
+	raise:  Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: Cashier expiredCard.
+		"chequear  que no se halla llevado a cabo la compra, es decir no debe estar en el libro de ventas"
+	]
+! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/20/2017 17:27:55'!
+test13SePuedeRealizarCheckoutConUnaTarjetaValida
+
+	|cashier salesBook|
+	
+	salesBook := LinkedList new.
+	
+	cashier := Cashier withCart: notEmptyCart withCard: validUntilTodayCreditCard withCurrentDate: Date today withSalesBook: salesBook.
+	
+	self assert: cashier checkOut .
+	
+	"también tenemos que verificar que esté en el libro de ventas"
+
+
+! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/20/2017 17:27:51'!
+test14CheckoutConUnCarritoVacioDaError
+
+	|cashier salesBook|
+	
+	salesBook := LinkedList new.
+	
+	cashier := Cashier withCart: emptyCart withCard: validUntilTodayCreditCard withCurrentDate: Date today withSalesBook: salesBook.
+	
+	self should: [cashier checkOut]
+	raise:  Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'carrito vacio'.
+		"chequear  que no se halla llevado a cabo la compra, es decir no debe estar en el libro de ventas"
+	]
+! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/20/2017 17:27:46'!
+test15CheckoutCorrectoSeAgregaAlLibroDeVentas
+	|cashier salesBook|
+	
+	salesBook := LinkedList new.
+	
+	cashier := Cashier withCart: notEmptyCart withCard: validUntilTodayCreditCard withCurrentDate: Date today withSalesBook: salesBook.
+	
+	cashier checkOut.
+	
+	self assert: salesBook notEmpty.! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/20/2017 17:27:21'!
+test16CheckoutCorrectoAgregaAlLibroDeVentasElValorDelCarrito
+	|cashier salesBook|
+	
+	salesBook := LinkedList new.
+	
+	cashier := Cashier withCart: notEmptyCart withCard: validUntilTodayCreditCard withCurrentDate: Date today withSalesBook: salesBook.
+	
+	cashier checkOut.
+	
+	self assert: salesBook last equals: notEmptyCart totalAmount.! !
+
+
+!TusLibrosTest methodsFor: 'setUp' stamp: 'fz 6/20/2017 17:19:02'!
 setUp
 "Books"
 	book1 := 'ISBN1'.
@@ -146,48 +220,18 @@ setUp
 "Catalogs"
 	emptyCatalog := Set new.
 	book1Catalog := Set with: book1.
-	
 
-! !
-
-
-!classDefinition: #CashierTest category: #'TusLibros-Solution'!
-TestCase subclass: #CashierTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros-Solution'!
-
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:37:36'!
-test01CheckoutConUnaTarjetaVencidaDaError
-
-	|cashier expiredCreditCard|
+"Carts"
+	emptyCart := Cart with: book1Catalog.
 	
-	expiredCreditCard :=  Date yesterday.
-	
-	cashier := Cashier withCard: expiredCreditCard withCurrentDate: Date today.
-	.
-	self should: [cashier checkOut.]
-	raise:  Error - MessageNotUnderstood 
-	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: Cashier expiredCard.
-		"chequear  que no se halla llevado a cabo la compra, es decir no debe estar en el libro de ventas"
-	]
+	notEmptyCart := Cart with: book1Catalog.
+	notEmptyCart add: book1.
 
-! !
-
-!CashierTest methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:39:30'!
-test02SePuedeRealizarCheckoutConUnaTarjetaValida
-
-	|cashier expiredCreditCard|
+"Cards"
+	expiredYesterdayCreditCard := Date yesterday.
+	validUntilTodayCreditCard := Date today.
 	
-	expiredCreditCard :=  Date today.
 	
-	cashier := Cashier withCard: expiredCreditCard withCurrentDate: Date today.
-	
-	self assert: cashier checkOut .
-	
-	"también tenemos que verificar que esté en el libro de ventas"
 
 ! !
 
@@ -234,6 +278,11 @@ quantityOf: aBookISBN
 size
 	^content size.! !
 
+
+!Cart methodsFor: 'as yet unclassified' stamp: 'fz 6/20/2017 17:28:32'!
+totalAmount
+	^1.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #'TusLibros-Solution'!
@@ -264,24 +313,29 @@ notIntegerQuantities
 
 !classDefinition: #Cashier category: #'TusLibros-Solution'!
 Object subclass: #Cashier
-	instanceVariableNames: 'card date'
+	instanceVariableNames: 'card date cart salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-
-!Cashier methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:36:15'!
+!Cashier methodsFor: 'as yet unclassified' stamp: 'fz 6/20/2017 17:28:51'!
 checkOut
 		
-	(card < date) ifTrue:[^ self error: self class expiredCard.].
+	(card < date) ifTrue:[^ self error: self class expiredCard].
+	(cart isEmpty) ifTrue:[^self error: 'carrito vacio'].
+	
+	salesBook add: cart totalAmount.
 	
 	^ true.	
 	! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:35:46'!
-withCard: aCard withCurrentDate: theCurrentDate
+
+!Cashier methodsFor: 'initialization' stamp: 'fz 6/20/2017 17:12:32'!
+withCart: aCart withCard: aCard withCurrentDate: theCurrentDate withSalesBook: aSalesBook
+	cart := aCart.
 	card := aCard.
-	date := theCurrentDate.! !
+	date := theCurrentDate.
+	salesBook := aSalesBook.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -289,10 +343,11 @@ withCard: aCard withCurrentDate: theCurrentDate
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:18:12'!
+!Cashier class methodsFor: 'messages' stamp: 'lm 6/20/2017 16:18:12'!
 expiredCard
 	^ 'Cannot Check Out with Expired Card.'! !
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:33:32'!
-withCard: aCard withCurrentDate: currentDate
-	^ self new withCard: aCard withCurrentDate: currentDate.! !
+
+!Cashier class methodsFor: 'initialization' stamp: 'fz 6/20/2017 17:11:50'!
+withCart: aCart withCard: aCard withCurrentDate: theCurrentDate withSalesBook: aSalesBook
+	^self new withCart: aCart withCard: aCard withCurrentDate: theCurrentDate withSalesBook: aSalesBook.! !
