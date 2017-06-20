@@ -151,6 +151,47 @@ setUp
 ! !
 
 
+!classDefinition: #CashierTest category: #'TusLibros-Solution'!
+TestCase subclass: #CashierTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-Solution'!
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:37:36'!
+test01CheckoutConUnaTarjetaVencidaDaError
+
+	|cashier expiredCreditCard|
+	
+	expiredCreditCard :=  Date yesterday.
+	
+	cashier := Cashier withCard: expiredCreditCard withCurrentDate: Date today.
+	.
+	self should: [cashier checkOut.]
+	raise:  Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: Cashier expiredCard.
+		"chequear  que no se halla llevado a cabo la compra, es decir no debe estar en el libro de ventas"
+	]
+
+! !
+
+!CashierTest methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:39:30'!
+test02SePuedeRealizarCheckoutConUnaTarjetaValida
+
+	|cashier expiredCreditCard|
+	
+	expiredCreditCard :=  Date today.
+	
+	cashier := Cashier withCard: expiredCreditCard withCurrentDate: Date today.
+	
+	self assert: cashier checkOut .
+	
+	"también tenemos que verificar que esté en el libro de ventas"
+
+! !
+
+
 !classDefinition: #Cart category: #'TusLibros-Solution'!
 Object subclass: #Cart
 	instanceVariableNames: 'catalog content'
@@ -193,7 +234,6 @@ quantityOf: aBookISBN
 size
 	^content size.! !
 
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #'TusLibros-Solution'!
@@ -220,3 +260,39 @@ negativeOrNullQuantity
 !Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 21:20:26'!
 notIntegerQuantities
 	^'not integer quantities not allowed'.! !
+
+
+!classDefinition: #Cashier category: #'TusLibros-Solution'!
+Object subclass: #Cashier
+	instanceVariableNames: 'card date'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-Solution'!
+
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:36:15'!
+checkOut
+		
+	(card < date) ifTrue:[^ self error: self class expiredCard.].
+	
+	^ true.	
+	! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:35:46'!
+withCard: aCard withCurrentDate: theCurrentDate
+	card := aCard.
+	date := theCurrentDate.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Cashier class' category: #'TusLibros-Solution'!
+Cashier class
+	instanceVariableNames: ''!
+
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:18:12'!
+expiredCard
+	^ 'Cannot Check Out with Expired Card.'! !
+
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'lm 6/20/2017 16:33:32'!
+withCard: aCard withCurrentDate: currentDate
+	^ self new withCard: aCard withCurrentDate: currentDate.! !
