@@ -5,17 +5,18 @@ TestCase subclass: #CartTest
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:40:57'!
+!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:44:05'!
 test01NoSePuedenAgregarLibrosQueNoSonDeLaEditorial
-	|cart1|
+	|cart|
 	
-	cart1 := Cart with: emptyCatalog.
+	cart := Cart with: emptyCatalog.
 	
 	self
-		should: [cart1 add: book1]
+		should: [cart add: book1]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [:anError |
-			self assert: anError messageText equals: Cart bookNotFromEditorial
+			self assert: anError messageText equals: Cart bookNotFromEditorial.
+			self deny: (cart hasBook: book1).
 		].! !
 
 !CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 18:32:30'!
@@ -85,7 +86,7 @@ test08SePuedePreguntarPorLaCantidadDeUnLibro
 	
 	self assert: (cart quantityOf: book1) equals: 2.! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:11:16'!
+!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:06'!
 test09NoSePuedenAgregarLibrosQueNoSonDeLaEditorialEnCantidades
 	|cart|
 	
@@ -95,10 +96,11 @@ test09NoSePuedenAgregarLibrosQueNoSonDeLaEditorialEnCantidades
 		should: [cart add: book1 withQuantity: 1] 
 		raise: Error - MessageNotUnderstood  
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Cart bookNotFromEditorial
+			self assert: anError messageText equals: Cart bookNotFromEditorial.
+			self deny: (cart hasBook: book1).
 		].! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:17:38'!
+!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:13'!
 test10AgregarCantidadesMenoresOIgualesACeroDaError
 	|cart|
 	
@@ -108,38 +110,30 @@ test10AgregarCantidadesMenoresOIgualesACeroDaError
 		should: [cart add: book1 withQuantity: 0] 
 		raise: Error - MessageNotUnderstood  
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Cart negativeOrNullQuantity
+			self assert: anError messageText equals: Cart negativeOrNullQuantity.
+			self deny: (cart hasBook: book1).
 		].
 	
 	self
 		should: [cart add: book1 withQuantity: -1] 
 		raise: Error - MessageNotUnderstood  
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Cart negativeOrNullQuantity
+			self assert: anError messageText equals: Cart negativeOrNullQuantity.
+			self deny: (cart hasBook: book1).
 		].! !
 
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:19:16'!
-test11AlSacarUnLibroYaNoEstaEnElCarrito
-	|cart|
-	
-	cart := Cart with: book1Catalog.
-	cart add: book1.
-	
-	cart remove: book1.
-	
-	self deny: (cart hasBook: book1).! !
-
-!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 19:24:47'!
-test12SacarUnLibroNoAgregadoDaError
+!CartTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:17'!
+test11AgregarCantidadesNoEnterasDaError
 	|cart|
 	
 	cart := Cart with: book1Catalog.
 	
-	self 
-		should: [cart remove: book1] 
-		raise: Error - MessageNotUnderstood 
+	self
+		should: [cart add: book1 withQuantity: 1.5] 
+		raise: Error - MessageNotUnderstood  
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Cart bookNotFound
+			self assert: anError messageText equals: Cart notIntegerQuantities.
+			self deny: (cart hasBook: book1).
 		].! !
 
 
@@ -174,9 +168,10 @@ with: aCatalog
 add: aBookISBN
 	self add: aBookISBN withQuantity: 1.! !
 
-!Cart methodsFor: 'adding' stamp: 'fz 6/19/2017 19:15:10'!
+!Cart methodsFor: 'adding' stamp: 'fz 6/19/2017 21:23:55'!
 add: aBookISBN withQuantity: aQuantity
 	(catalog includes: aBookISBN) ifFalse: [^self error: self class bookNotFromEditorial].
+	(aQuantity isKindOf: Integer) ifFalse: [^self error: self class notIntegerQuantities].
 	(aQuantity <= 0) ifTrue: [^ self error: self class negativeOrNullQuantity].
 	
 	content add: aBookISBN withOccurrences: aQuantity.! !
@@ -198,10 +193,6 @@ quantityOf: aBookISBN
 size
 	^content size.! !
 
-
-!Cart methodsFor: 'removing' stamp: 'fz 6/19/2017 19:25:43'!
-remove: aBookISBN
-	content remove: aBookISBN ifAbsent:[^self error: self class bookNotFound].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -225,3 +216,7 @@ bookNotFromEditorial
 !Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 19:17:20'!
 negativeOrNullQuantity
 	^'negative or null quantities not allowed'.! !
+
+!Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 21:20:26'!
+notIntegerQuantities
+	^'not integer quantities not allowed'.! !
