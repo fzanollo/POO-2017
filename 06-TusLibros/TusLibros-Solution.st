@@ -1,6 +1,6 @@
 !classDefinition: #TusLibrosTest category: #'TusLibros-Solution'!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'emptyCatalog book1 book2 book1Catalog notEmptyCart expiredYesterdayCreditCard validUntilTodayCreditCard salesBook booksCatalog merchantProcessorValidCard'
+	instanceVariableNames: 'emptyCatalog book1 book2 book1Catalog notEmptyCart expiredYesterdayCreditCard validUntilTodayCreditCard salesBook booksCatalog merchantProcessorValidCard noUsers user1 pass1 twoUsers user2 pass2 sharedSalesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
@@ -122,7 +122,7 @@ test10AgregarCantidadesMenoresOIgualesACeroDaError
 			self deny: (cart hasBook: book1).
 		].! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/19/2017 21:50:17'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 15:30:53'!
 test11AgregarCantidadesNoEnterasDaError
 	|cart|
 	
@@ -132,7 +132,7 @@ test11AgregarCantidadesNoEnterasDaError
 		should: [cart add: book1 withQuantity: 1.5] 
 		raise: Error - MessageNotUnderstood  
 		withExceptionDo: [:anError|
-			self assert: anError messageText equals: Cart notIntegerQuantities.
+			self assert: anError messageText equals: Cart notIntegerQuantity.
 			self deny: (cart hasBook: book1).
 		].! !
 
@@ -223,7 +223,7 @@ test17CarritoCalculaCorrectamenteElImporteTotal
 	
 	self assert: cart totalAmount equals: 40.! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:08:26'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:16:24'!
 test18CheckoutConTarjetaRobadaDaError
 	|cashier salesBook merchantProcessor|
 	
@@ -236,11 +236,11 @@ test18CheckoutConTarjetaRobadaDaError
 	self should: [cashier checkOut] 
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [:anError | 
-		self assert: anError messageText equals: ('Error: ' append: MerchantProcessor stolenCard).
+		self assert: anError messageText equals: MerchantProcessor stolenCard.
 		self assert: salesBook isEmpty.
 	]! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:11:58'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:16:15'!
 test19CheckoutConTarjetaSinCreditoDaError
 	|cashier salesBook merchantProcessor|
 	
@@ -253,7 +253,7 @@ test19CheckoutConTarjetaSinCreditoDaError
 	self should: [cashier checkOut] 
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [:anError | 
-		self assert: anError messageText equals: ('Error: ' append: MerchantProcessor withoutFundsCreditCard).
+		self assert: anError messageText equals: MerchantProcessor withoutFundsCreditCard.
 		self assert: salesBook isEmpty.
 	]! !
 
@@ -288,89 +288,73 @@ test21CheckoutConTarjetaValidaDebitaDesdeMerchantProcessor
 	cashier checkOut.
 	self assert: merchantProcessor calls equals: 1.! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:31:20'!
-test22SeCreaUnCarritoParaUnUsuarioYContraseñaValidos
-	|restInterface user pass userPasswordDictionary cartID|
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:15:31'!
+test22ElMerchantProcessorCaidoLevantaUnError
+	|cashier salesBook merchantProcessor|
 	
-	user := 'user1'.
-	pass := 'user1Pass'.
+	salesBook := LinkedList new.
 	
-	userPasswordDictionary := Dictionary new.
-	userPasswordDictionary at: user put: pass.
+	merchantProcessor := MerchantProcessorSimulator withBehaviour: [self error: MerchantProcessor notReachable].
 	
-	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: userPasswordDictionary.
+	cashier := Cashier withCart: notEmptyCart withCard: validUntilTodayCreditCard withCurrentDate: Date today withSalesBook: salesBook withMerchantProcessor: merchantProcessor.
 	
-	cartID := restInterface createCartForClient: user withPass: pass.
+	self should: [cashier checkOut] 
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError | 
+		self assert: anError messageText equals: MerchantProcessor notReachable.
+		self assert: salesBook isEmpty.
+	]! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:03:40'!
+test23SeCreaUnCarritoParaUnUsuarioYContraseñaValidos
+	|restInterface cartID|
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	cartID := restInterface createCartForClient: user1 withPass: pass1.
 	
 	self assert: (restInterface listCart: cartID) isEmpty.! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:52:43'!
-test23CrearUnCarritoConUsuarioInvalidoDaError
-	|restInterface user pass userPasswordDictionary|
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:14:27'!
+test24CrearUnCarritoConUsuarioInvalidoDaError
+	|restInterface|
 	
-	user := 'user1'.
-	pass := 'user1Pass'.
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
 	
-	userPasswordDictionary := Dictionary new.
-	
-	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: userPasswordDictionary.
-	
-	self should: [restInterface createCartForClient: user withPass: pass] 
+	self should: [restInterface createCartForClient: 'pepito' withPass: pass1] 
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [:anError | 
 			self assert: anError messageText equals: RestInterface invalidUser.
 		].! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:52:57'!
-test24CrearUnCarritoConPasswordInvalidoDaError
-	|restInterface user pass userPasswordDictionary|
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:14:32'!
+test25CrearUnCarritoConPasswordInvalidoDaError
+	|restInterface|
 	
-	user := 'user1'.
-	pass := 'user1Pass'.
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
 	
-	userPasswordDictionary := Dictionary new.
-	userPasswordDictionary at: user put: pass.
-	
-	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: userPasswordDictionary.
-	
-	self should: [restInterface createCartForClient: user withPass: 'sarasa'] 
+	self should: [restInterface createCartForClient: user1 withPass: 'sarasa'] 
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [:anError | 
 			self assert: anError messageText equals: RestInterface invalidPassword.
 		].! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 20:58:28'!
-test25LosCarritosTienenIDsUnicos
-	|restInterface user1 pass1 user2 pass2 userPasswordDictionary cartID1 cartID2|
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:03:53'!
+test26LosCarritosTienenIDsUnicos
+	|restInterface cartID1 cartID2|
 	
-	user1 := 'user1'.
-	pass1 := 'user1Pass'.
-	
-	user2 := 'user2'.
-	pass2 := 'user2Pass'.
-	
-	userPasswordDictionary := Dictionary new.
-	userPasswordDictionary at: user1 put: pass1.
-	userPasswordDictionary at: user2 put: pass2.
-	
-	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: userPasswordDictionary.
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
 	
 	cartID1 := restInterface createCartForClient: user1 withPass: pass1.
 	cartID2 := restInterface createCartForClient: user2 withPass: pass2.
 	
 	self deny: cartID1 = cartID2.! !
 
-!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/26/2017 21:43:32'!
-test26SiAgregoUnLibroTieneQueEstarEnElListadoDelCarrito
-	|restInterface user1 pass1 userPasswordDictionary cartID1|
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:03:58'!
+test27SiAgregoUnLibroTieneQueEstarEnElListadoDelCarrito
+	|restInterface cartID1|
 	
-	user1 := 'user1'.
-	pass1 := 'user1Pass'.
-	
-	userPasswordDictionary := Dictionary new.
-	userPasswordDictionary at: user1 put: pass1.
-	
-	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: userPasswordDictionary.
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
 	
 	cartID1 := restInterface createCartForClient: user1 withPass: pass1.
 	
@@ -379,8 +363,234 @@ test26SiAgregoUnLibroTieneQueEstarEnElListadoDelCarrito
 	self assert: (restInterface listCart: cartID1) size equals: 1.
 	self assert: ((restInterface listCart: cartID1) at: book1) equals: 2.! !
 
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:04:04'!
+test28AgregarUnLibroConIDCarritoInvalidoDaError
+	|restInterface cartsBefore|
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: noUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
+	
+	cartsBefore := restInterface carts.
+	
+	self should: [restInterface addToCart: 1 bookISBN: book1 quantity: 2] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+			self assert: restInterface carts equals: cartsBefore.
+		].! !
 
-!TusLibrosTest methodsFor: 'setUp' stamp: 'fz 6/26/2017 19:52:33'!
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:04:08'!
+test29AgregarUnLibroConBookISBNInvalidoDaError
+	|restInterface cartID1|
+	
+	restInterface := RestInterface withCatalog: emptyCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
+	
+	cartID1 := restInterface createCartForClient: user1 withPass: pass1.
+	
+	self should: [restInterface addToCart: cartID1 bookISBN: book1 quantity: 2] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: Cart bookNotFromEditorial.
+			self assert: (restInterface listCart: cartID1) isEmpty.
+		].
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:04:13'!
+test30AgregarUnLibroConCantidadInvalidaDaError
+	|restInterface cartID1|
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
+	
+	cartID1 := restInterface createCartForClient: user1 withPass: pass1.
+	
+	self should: [restInterface addToCart: cartID1 bookISBN: book1 quantity: 0] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: Cart negativeOrNullQuantity.
+			self assert: (restInterface listCart: cartID1) isEmpty.
+		].
+	
+	self should: [restInterface addToCart: cartID1 bookISBN: book1 quantity: -1] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: Cart negativeOrNullQuantity.
+			self assert: (restInterface listCart: cartID1) isEmpty.
+		].
+	
+	self should: [restInterface addToCart: cartID1 bookISBN: book1 quantity: 1.5] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: Cart notIntegerQuantity.
+			self assert: (restInterface listCart: cartID1) isEmpty.
+		].! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:04:18'!
+test31ListarUnCarritoInvalidoDaError
+	|restInterface|
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: noUsers withSalesBook: sharedSalesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today..
+	
+	self should: [restInterface listCart: 1] 
+		raise:  Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:13:00'!
+test32CheckOutCarritoValidoAgregaAlLibroDeComprasYDebitaDeMerchantProcessor
+	|restInterface cartID salesBook mpCallsBefore|
+	
+	salesBook := LinkedList new.
+	
+	mpCallsBefore := merchantProcessorValidCard calls.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	cartID := restInterface createCartForClient: user1 withPass: pass1.
+	restInterface addToCart: cartID bookISBN: book1 quantity: 2.
+	
+	restInterface checkOutCart: cartID fromCard: validUntilTodayCreditCard.
+	
+	self deny: salesBook isEmpty.
+	self assert: merchantProcessorValidCard calls equals: mpCallsBefore + 1.
+	
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:19:44'!
+test33UnaVezRealizadoElCheckOutNoSePuedeUsarElCarrito
+	|restInterface cartID salesBook|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	cartID := restInterface createCartForClient: user1 withPass: pass1.
+	restInterface addToCart: cartID bookISBN: book1 quantity: 2.
+	
+	restInterface checkOutCart: cartID fromCard: validUntilTodayCreditCard.
+	
+	self should: [restInterface addToCart: cartID bookISBN: book1 quantity: 2] 
+		raise: Error - MessageNotUnderstood  
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].
+	
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:26:31'!
+test34CheckOutConIDDeCarritoInvalidoDaError
+	|restInterface salesBook|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	self should: [restInterface checkOutCart: 1 fromCard: validUntilTodayCreditCard] 
+		raise: Error - MessageNotUnderstood  
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].
+	
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:43:12'!
+test35CrearUnaTarjetaConNombreDeDueñoDeTarjetaVacioDaError
+
+	self should: [Card withNumber: 1234 withExpirationDate: Date today withOwnerName: ''.] 
+		raise: Error - MessageNotUnderstood  
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: Card emptyOwnerName.
+		].
+	
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 16:50:10'!
+test36ListarLasComprasDeUnClienteQueNoComproRetornaVacio
+	|restInterface salesBook|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	self assert: (restInterface listPurchasesOf: user1 withPass: pass1) isEmpty.
+	! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:13:27'!
+test37ListarLasComprasDeUnClienteQueComproRetornaCorrectamente
+	|restInterface salesBook cartID|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	cartID := restInterface createCartForClient: user1 withPass: pass1.
+	restInterface addToCart: cartID bookISBN: book1 quantity: 2.
+	
+	restInterface checkOutCart: cartID fromCard: validUntilTodayCreditCard.
+	
+	self deny: (restInterface listPurchasesOf: user1 withPass: pass1) isEmpty.
+	self assert: (restInterface listPurchasesOf: user1 withPass: pass1) last amount equals: 40.! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:17:32'!
+test38ListarLasComprasDeUnClienteInvalidoRetornaError
+	|restInterface salesBook|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	self should: [restInterface listPurchasesOf: 'pepelui' withPass: pass1] 
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidUser.
+		].! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:18:25'!
+test39ListarLasComprasDeUnPasswordInvalidoRetornaError
+	|restInterface salesBook|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	self should: [restInterface listPurchasesOf: user1 withPass: 'sarasa'] 
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidPassword.
+		].! !
+
+!TusLibrosTest methodsFor: 'tests' stamp: 'fz 6/27/2017 17:33:50'!
+test40SiPasaron30MinDeLaUltimaOperacionElCarritoEsInvalido
+	|restInterface salesBook cartID|
+	
+	salesBook := LinkedList new.
+	
+	restInterface := RestInterface withCatalog: booksCatalog withUsersInfo: twoUsers withSalesBook: salesBook withMerchantProcessor: merchantProcessorValidCard withCurrentDate: Date today.
+	
+	cartID := restInterface createCartForClient: user1 withPass: pass1.
+	restInterface addToCart: cartID bookISBN: book1 quantity: 2.
+	
+	restInterface thirtyMinutesLater.
+	
+	self should: [restInterface addToCart: cartID bookISBN: book1 quantity: 2] 
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].
+	
+	self should: [restInterface listCart: cartID] 
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].
+	
+	self should: [restInterface checkOutCart: cartID fromCard: validUntilTodayCreditCard ] 
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [:anError | 
+			self assert: anError messageText equals: RestInterface invalidCartID.
+		].! !
+
+
+!TusLibrosTest methodsFor: 'setUp' stamp: 'fz 6/27/2017 17:03:03'!
 setUp
 "Books"
 	book1 := 'ISBN1'.
@@ -394,20 +604,72 @@ setUp
 	booksCatalog at: book1 put: 20.
 	booksCatalog at: book2 put: 10.
 
+"SalesBook"
+	sharedSalesBook := LinkedList new.
+
 "Carts"	
 	notEmptyCart := Cart with: book1Catalog.
 	notEmptyCart add: book1.
 
 "Cards"
-	expiredYesterdayCreditCard := Date yesterday.
-	validUntilTodayCreditCard := Date today.
+	expiredYesterdayCreditCard := Card withNumber: 1234 withExpirationDate: Date yesterday withOwnerName: 'pepe'.
+	validUntilTodayCreditCard := Card withNumber: 4321 withExpirationDate: Date today withOwnerName: 'marta'.
 	
 "Merchant Processor simulators"
 	merchantProcessorValidCard := MerchantProcessorSimulator withBehaviour: [true].
+
+"Users data"
+	user1 := 'user1'.
+	pass1 := 'user1Pass'.
+	
+	user2 := 'user2'.
+	pass2 := 'user2Pass'.
+	
+	noUsers := Dictionary new.
+	twoUsers := Dictionary new.
+	twoUsers at: user1 put: pass1.
+	twoUsers at: user2 put: pass2.
+	
+	
 	
 	
 
 ! !
+
+
+!classDefinition: #Card category: #'TusLibros-Solution'!
+Object subclass: #Card
+	instanceVariableNames: 'number expirationDate ownerName'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-Solution'!
+
+!Card methodsFor: 'initialization' stamp: 'fz 6/27/2017 16:38:45'!
+withNumber: aNumber withExpirationDate: aDate withOwnerName: aName
+	number := aNumber.
+	expirationDate := aDate.
+	ownerName := aName.! !
+
+
+!Card methodsFor: 'accessing' stamp: 'fz 6/27/2017 16:39:40'!
+expirationDate
+	^expirationDate.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Card class' category: #'TusLibros-Solution'!
+Card class
+	instanceVariableNames: ''!
+
+!Card class methodsFor: 'initialization' stamp: 'fz 6/27/2017 16:42:29'!
+withNumber: aNumber withExpirationDate: aDate withOwnerName: aName
+	(aName = '') ifTrue: [self error: self emptyOwnerName].
+	^self new withNumber: aNumber withExpirationDate: aDate withOwnerName: aName.! !
+
+
+!Card class methodsFor: 'messages' stamp: 'fz 6/27/2017 16:43:56'!
+emptyOwnerName
+	^'empty card owner name'.! !
 
 
 !classDefinition: #Cart category: #'TusLibros-Solution'!
@@ -427,11 +689,11 @@ with: aCatalog
 add: aBookISBN
 	self add: aBookISBN withQuantity: 1.! !
 
-!Cart methodsFor: 'adding' stamp: 'fz 6/21/2017 16:19:56'!
+!Cart methodsFor: 'adding' stamp: 'fz 6/27/2017 15:31:14'!
 add: aBookISBN withQuantity: aQuantity
 	(catalog includesKey: aBookISBN) ifFalse: [^self error: self class bookNotFromEditorial].
 	
-	(aQuantity isKindOf: Integer) ifFalse: [^self error: self class notIntegerQuantities].
+	(aQuantity isKindOf: Integer) ifFalse: [^self error: self class notIntegerQuantity].
 	(aQuantity <= 0) ifTrue: [^ self error: self class negativeOrNullQuantity].
 	
 	content add: aBookISBN withOccurrences: aQuantity.! !
@@ -487,10 +749,6 @@ with: aCatalog andID: anID
 	^self new with: aCatalog andID: anID.! !
 
 
-!Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 19:25:23'!
-bookNotFound
-	^'book not found'.! !
-
 !Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 18:41:12'!
 bookNotFromEditorial
 	^'cant add books not from the editorial'.! !
@@ -499,8 +757,8 @@ bookNotFromEditorial
 negativeOrNullQuantity
 	^'negative or null quantities not allowed'.! !
 
-!Cart class methodsFor: 'messages' stamp: 'fz 6/19/2017 21:20:26'!
-notIntegerQuantities
+!Cart class methodsFor: 'messages' stamp: 'fz 6/27/2017 15:31:02'!
+notIntegerQuantity
 	^'not integer quantities not allowed'.! !
 
 
@@ -511,13 +769,13 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!Cashier methodsFor: 'checkout' stamp: 'fz 6/26/2017 19:44:29'!
+!Cashier methodsFor: 'checkout' stamp: 'fz 6/27/2017 16:39:15'!
 checkOut
 		
-	(card < date) ifTrue:[^ self error: self class expiredCard].
+	(card expirationDate < date) ifTrue:[^ self error: self class expiredCard].
 	(cart isEmpty) ifTrue:[^self error: 'carrito vacio'].
 	
-	[merchantProcessor debit: cart totalAmount from: card] ifError: [:anError | ^self error: anError].
+	merchantProcessor debit: cart totalAmount from: card.
 	
 	salesBook add: cart totalAmount.	
 	^ true.	! !
@@ -530,6 +788,11 @@ withCart: aCart withCard: aCard withCurrentDate: theCurrentDate withSalesBook: a
 	date := theCurrentDate.
 	salesBook := aSalesBook.
 	merchantProcessor := aMerchantProcessor.! !
+
+
+!Cashier methodsFor: 'private' stamp: 'fz 6/27/2017 17:13:44'!
+amount
+	^cart totalAmount.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -567,6 +830,10 @@ MerchantProcessor class
 !MerchantProcessor class methodsFor: 'messages' stamp: 'fz 6/26/2017 20:13:17'!
 expiredCard
 	^'expired card'! !
+
+!MerchantProcessor class methodsFor: 'messages' stamp: 'fz 6/26/2017 22:23:13'!
+notReachable
+	^'merchant processor not reachable'! !
 
 !MerchantProcessor class methodsFor: 'messages' stamp: 'fz 6/26/2017 20:05:50'!
 stolenCard
@@ -621,51 +888,122 @@ withBehaviour: aBehaviour
 
 !classDefinition: #RestInterface category: #'TusLibros-Solution'!
 Object subclass: #RestInterface
-	instanceVariableNames: 'catalog usersInfo lastCartID carts'
+	instanceVariableNames: 'catalog usersInfo lastCartID carts salesBook merchantProcessor date usersPurchases usersCurrentCart cartsLastUsedTime'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Solution'!
 
-!RestInterface methodsFor: 'initialization' stamp: 'fz 6/26/2017 21:17:24'!
-withCatalog: theCatalog withUsersInfo: theUsersInfo
+!RestInterface methodsFor: 'initialization' stamp: 'fz 6/27/2017 17:31:30'!
+withCatalog: theCatalog withUsersInfo: theUsersInfo withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor withCurrentDate: aDate 
 	catalog := theCatalog.
 	usersInfo := theUsersInfo.
+	salesBook := aSalesBook.
+	merchantProcessor := aMerchantProcessor.
+	date := aDate.
 	
 	carts := Dictionary new.
-	lastCartID := 0.! !
+	lastCartID := 0.
+	usersPurchases := Dictionary new.
+	usersCurrentCart := Dictionary new.
+	cartsLastUsedTime := Dictionary new.! !
 
 
-!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/26/2017 21:16:20'!
+!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/27/2017 15:38:32'!
 addToCart: anID bookISBN: aBookISBN quantity: aQuantity
 	|cart|
-	cart := carts at: anID.
+	cart := self getCart: anID.
 	
 	cart add: aBookISBN withQuantity: aQuantity.! !
 
-!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/26/2017 21:18:29'!
+!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/27/2017 17:10:31'!
+checkOutCart: anID fromCard: aCard 
+	|cart cartUser cashier|
+	
+	cart := self getCart: anID.
+	
+	cashier := Cashier withCart: cart withCard: aCard withCurrentDate: date withSalesBook: salesBook withMerchantProcessor: merchantProcessor.
+	
+	cashier checkOut.
+	
+	carts removeKey: anID.
+	
+	cartUser := usersCurrentCart at: anID.
+	self addPurchase: cashier toHistoryOf: cartUser.! !
+
+!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/27/2017 17:31:58'!
 createCartForClient: user withPass: pass
 	|cartID|
 	
-	((usersInfo at: user ifAbsent:[^self error: RestInterface invalidUser]) = pass) 
-		ifFalse: [^self error: RestInterface invalidPassword].
+	self checkUser: user password: pass.
 		
 	cartID := self nextCartID.
 	carts at: cartID put: (Cart with: catalog).
 	
+	usersCurrentCart at: cartID put: user.
+	cartsLastUsedTime at: cartID put: 0.
+	
 	^cartID.! !
 
-!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/26/2017 21:20:20'!
+!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/27/2017 15:38:47'!
 listCart: anID
 	|cart|
+		
+	cart := self getCart: anID.
 	
-	cart := carts at: anID.
 	^cart list.! !
 
+!RestInterface methodsFor: 'RESTmessages' stamp: 'fz 6/27/2017 17:19:32'!
+listPurchasesOf: user withPass: pass
+	self checkUser: user password: pass.
+		
+	^usersPurchases at: user ifAbsent:[OrderedCollection new].	! !
+
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 17:12:37'!
+addPurchase: purchase toHistoryOf: user
+	(usersPurchases includesKey: user) ifFalse: [usersPurchases at: user put: LinkedList new].
+	(usersPurchases at: user) add: purchase.! !
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 15:16:02'!
+carts
+	^carts.! !
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 17:19:24'!
+checkUser: user password: pass
+		((usersInfo at: user ifAbsent:[^self error: self class invalidUser]) = pass) 
+		ifFalse: [^self error: self class invalidPassword].! !
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 17:41:19'!
+deleteInvalidCart: cartID
+	carts removeKey: cartID.
+	usersCurrentCart removeKey: cartID.
+	cartsLastUsedTime removeKey: cartID.
+	
+	self error: self class invalidCartID! !
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 17:42:34'!
+getCart: anID
+	|cart|
+	cart := carts at: anID ifAbsent:[self error: self class invalidCartID].
+	
+	((cartsLastUsedTime at: anID) < 30) ifFalse:[self deleteInvalidCart: anID].
+	
+	"si es valido reseteo el tiempo"
+	cartsLastUsedTime at: anID put: 0.
+	
+	^cart.! !
 
 !RestInterface methodsFor: 'private' stamp: 'fz 6/26/2017 21:00:27'!
 nextCartID
 	lastCartID := lastCartID + 1.
 	^lastCartID.! !
+
+!RestInterface methodsFor: 'private' stamp: 'fz 6/27/2017 17:32:47'!
+thirtyMinutesLater
+	|oldTime|
+	cartsLastUsedTime keys do: [:cartID | 
+		oldTime := cartsLastUsedTime at:cartID. 
+		cartsLastUsedTime at: cartID put: oldTime + 30]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -673,10 +1011,14 @@ nextCartID
 RestInterface class
 	instanceVariableNames: ''!
 
-!RestInterface class methodsFor: 'initialization' stamp: 'fz 6/26/2017 20:34:53'!
-withCatalog: theCatalog withUsersInfo: theUsersInfo
-	^self new withCatalog: theCatalog withUsersInfo: theUsersInfo.! !
+!RestInterface class methodsFor: 'initialization' stamp: 'fz 6/27/2017 16:09:18'!
+withCatalog: theCatalog withUsersInfo: theUsersInfo withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor withCurrentDate: aDate 
+	^self new withCatalog: theCatalog withUsersInfo: theUsersInfo withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor withCurrentDate: aDate .! !
 
+
+!RestInterface class methodsFor: 'messages' stamp: 'fz 6/27/2017 15:19:56'!
+invalidCartID
+	^'invalid cart ID'! !
 
 !RestInterface class methodsFor: 'messages' stamp: 'fz 6/26/2017 20:50:09'!
 invalidPassword
